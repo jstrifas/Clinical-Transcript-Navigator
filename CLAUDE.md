@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-**Premier Care Specialist Console** — a single-folder web app that helps Care Specialists analyze patient call transcripts against the SOP library and recommend next steps. Designed to *feel* like an internal tool integrated with Salesforce Health Cloud (the patient's EHR), Google Workspace, Five9, and Outlook (all mocked).
+**Clinical Transcript Navigator** (the UI was formerly branded "Premier Care Specialist Console") — a single-folder web app that helps Care Specialists analyze patient call transcripts against the SOP library and recommend next steps. Designed to *feel* like an internal tool integrated with Salesforce Health Cloud (the patient's EHR), Google Workspace, Five9, and Outlook (all mocked). The user-facing name lives in `public/app.html` (`<title>`, header wordmark, footer); "Premier Health" still appears as the *fictional* health-system context (mock EHR/SSO, the drafted-email signature) and is intentionally distinct from the app name.
 
 Layers on top of plain transcript-analysis:
 - **Public / self-serve — no sign-in.** The SSO gate was removed; `public/app.html` boots straight into the analyzer via `initApp()` and shows a hardcoded "Jordan G / Care Specialist" chip. `/api/sso/signin` still exists but nothing calls it.
@@ -28,7 +28,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File server.ps1
 # http://localhost:4321
 ```
 
-Both serve `public/app.html` at `/` and read `sops.json` / `crm.json` from the repo root. **PowerShell mode lacks `/api/extract` and `/api/preflight`** — those are Next.js-only routes. Use `npm run dev` or deploy to Vercel for the full feature set.
+Both serve `public/app.html` at `/` and read `sops.json` / `crm.json` from the repo root. **PowerShell mode lacks `/api/extract` and `/api/preflight`, and its `/api/evaluate` returns the OLD 2-pill shape** (`recommendation`/`next_steps` scores) rather than the 4-dimension `evaluation` object the frontend expects — so on PS the confidence pills / Evaluation card render as "unavailable" or blank. **Next.js is the full-feature path; prefer `npm run dev`** (or deploy to Vercel). A committed `package-lock.json` pins the dependency tree. Two preview configs exist in `.claude/launch.json`: `premier-analyzer` (PowerShell) and `premier-next` (`npm run dev`).
 
 To enable AI engines: copy `.env.example` to `.env` (or `.env.local` for Next.js), set `ANTHROPIC_API_KEY` and `GEMINI_API_KEY`. **For Vercel deployment, set the same vars in the Vercel project's Environment Variables — the Production scope MUST be checked, and a redeploy is required after adding/changing them** (env vars are baked at build/start, not picked up live). Verify via `/api/health` which returns `engine` and `evaluator` flags.
 
@@ -197,7 +197,9 @@ The whole handler is wrapped in a try/catch that converts any unhandled exceptio
 - **`next_step_actionability`** (20%) — **DETERMINISTIC, server-side.** Computed by `lib/score-next-step-actionability.js`, NOT Gemini.
 - **`human_review_appropriateness`** (10%) — **DETERMINISTIC, server-side.** Computed by `lib/score-human-review.js`, NOT Gemini.
 
-`evaluator` field is `"gemini+deterministic"`. **All four dimensions are now overridden server-side** in `pages/api/evaluate.js`. Gemini is still called (the response shape requires its initial values as a fallback in case any deterministic scorer throws), but every dimension's value is replaced before the response is sent in the happy path. If you want to drop the Gemini call entirely, the deterministic scorers can produce a complete `evaluation` object on their own — see `pages/api/evaluate.js` for the assembly. `overall_score` is recomputed using the 40/30/20/10 weights after both overrides; `score_label` and `needs_escalation` are also refreshed.
+`evaluator` field is `"gemini+deterministic"` normally, or `"deterministic"` when the Gemini call failed (see next paragraph). **All four dimensions are overridden server-side** in `pages/api/evaluate.js`. Gemini is still called, but every dimension's value is replaced before the response is sent. `overall_score` is recomputed using the 40/30/20/10 weights after the overrides; `score_label` and `needs_escalation` are also refreshed.
+
+**Gemini failure is non-fatal (`pages/api/evaluate.js`).** Because all four scores are deterministic and Gemini's numeric output is discarded, a transient Gemini error (503 overloaded, 429, timeout) must NOT fail the whole evaluation — otherwise the UI shows "Unavailable" confidence pills for scores that don't even depend on Gemini. The `invokeGeminiEvaluation` call is wrapped in try/catch: on failure it falls through to the deterministic scorers with an empty seed `evaluation`, returns HTTP 200 with `evaluator: "deterministic"` and an `evaluator_notes` explaining Gemini was unavailable. Scores are identical whether Gemini is up or down. Do NOT revert this to a bare `await invokeGeminiEvaluation(...)` — that reintroduces the "Unavailable" bug. (The PowerShell `/api/evaluate` has no deterministic fallback — its scores come from Gemini — so it still hard-fails on Gemini errors; that path is deprecated.)
 
 **Why deterministic for `sop_accuracy`:** through multiple prompt iterations Gemini kept scoring this dimension below 1.0 with reason text that *explicitly praised* the analyzer's output — exactly the praise-then-deduct violation the prompt forbade. Gemini's numeric output doesn't bind to prompt rules reliably enough for a clinical routing score. The deterministic scorer encodes the three named penalty grounds from the prompt and runs every time:
 1. **Case_status mismatch:** any finding whose `status` doesn't match its SOP's `case_status` in `sops.json` → -0.3 each.
@@ -226,7 +228,7 @@ The frontend uses `sop_accuracy.score` for the Recommendation header pill and `n
 
 **Cost note:** the evaluator user message embeds the entire extraction JSON plus the analyze output, so it's significantly larger than the original 2-pill prompt. If you hit 429s on Gemini, the Flash-Lite quota is the most common cause.
 
-**Gemini model trap:** the default `gemini-2.0-flash` has a free-tier limit of 0 on at least some accounts. We use `gemini-2.5-flash-lite` instead via `GEMINI_MODEL` in `.env` / Vercel env. Legacy `gemini-1.5-*` names are no longer served on `v1beta` for new keys. To enumerate what's available for a key: `https://generativelanguage.googleapis.com/v1beta/models?key=...`. Frontend silently degrades to "Confidence unavailable" pills on Gemini failure — check browser console for the underlying error.
+**Gemini model trap:** `gemini-2.0-flash` has a free-tier limit of 0 on at least some accounts. Both engines now **default** to `gemini-2.5-flash-lite` in code (`lib/evaluate-gemini.js` and `server.ps1`), overridable via `GEMINI_MODEL` in `.env` / Vercel env — do not reintroduce `gemini-2.0-flash` as a default. Legacy `gemini-1.5-*` names are no longer served on `v1beta` for new keys. To enumerate what's available for a key: `https://generativelanguage.googleapis.com/v1beta/models?key=...`. Frontend silently degrades to "Confidence unavailable" pills on Gemini failure — check browser console for the underlying error.
 
 ### Edge-case handling (Layer 1, 2, 4)
 **Layer 1 — Upload (`onFileChosen`):**
@@ -323,7 +325,7 @@ To change SOP content, edit `sops.json` in the repo and push — `main` auto-dep
 
 | File / dir | Purpose |
 |------------|---------|
-| `package.json`, `next.config.js`, `vercel.json` | Next.js + Vercel configuration. `/` rewrites to `/app.html`. `vercel.json` declares per-route `maxDuration` (analyze/extract 60s, draft-email 35s, evaluate 30s, preflight 20s). |
+| `package.json`, `package-lock.json`, `next.config.js`, `vercel.json` | Next.js + Vercel configuration. package name is `clinical-transcript-navigator`. `/` rewrites to `/app.html`. `vercel.json` declares per-route `maxDuration` (analyze/extract 60s, draft-email 35s, evaluate 30s, preflight 20s). `package-lock.json` is committed for reproducible installs. |
 | `pages/api/*.js` | Serverless route handlers — health, sso/signin, crm/lookup, sops (GET/POST), sops/[id] (PUT/DELETE), integrations/import, integrations/export, analyze, extract, evaluate, preflight, draft-email. Pages router (not App router) for simpler `req.body` handling. |
 | `lib/data.js` | Reads `sops.json`/`crm.json`. `writeSops` throws `READONLY` when `process.env.VERCEL` is set. CRM lookup helpers (by query and from-transcript). |
 | `lib/disposition.js` | `STATUS_PRIORITY` map and `getOverallDisposition`. Mirrored in `server.ps1` and the Claude prompts — keep all in sync. |
@@ -347,7 +349,7 @@ To change SOP content, edit `sops.json` in the repo and push — `main` auto-dep
 | `.env.example` | Template — copy to `.env` and add `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, optional `ANTHROPIC_MODEL` / `GEMINI_MODEL`. |
 | `.gitignore` | `.env`, `.env.*` (with `!.env.example`), `node_modules/`, `.next/`, `.vercel/`. **Load-bearing for security.** |
 | `.gitattributes` | LF in repo, CRLF for `*.ps1` working trees, binary markers for png/pdf/docx etc. |
-| `.claude/launch.json` | Preview config (`premier-analyzer`). |
+| `.claude/launch.json` | Preview configs: `premier-analyzer` (PowerShell `server.ps1`) and `premier-next` (`npm run dev`, the full-feature Next.js path). |
 
 ### Git / repository
 
