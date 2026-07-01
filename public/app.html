@@ -1,0 +1,1626 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#1d4ed8" />
+<title>Premier Care Specialist Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* neutrals (cool slate) */
+    --bg: #eef2f8;
+    --surface: #ffffff;
+    --surface-2: #f6f8fc;
+    --border: #e4e9f1;
+    --border-strong: #cbd5e1;
+    --text: #0f172a;
+    --text-2: #475569;
+    --text-3: #6b7a90;
+    /* brand (clinical trust blue) */
+    --brand: #1d4ed8;
+    --brand-strong: #1e40af;
+    --brand-2: #3b82f6;
+    --brand-soft: #e3edfd;
+    --accent: #0ea5e9;
+    /* semantic status */
+    --green: #16a34a;
+    --green-soft: #dcfce7;
+    --yellow: #ca8a04;
+    --yellow-soft: #fef9c3;
+    --orange: #ea580c;
+    --orange-soft: #ffedd5;
+    --red: #dc2626;
+    --red-soft: #fee2e2;
+    --blue-soft: #e3edfd;
+    /* elevation scale (consistent across cards/sheets/modals) */
+    --shadow-xs: 0 1px 2px rgba(15,23,42,.05);
+    --shadow-sm: 0 1px 2px rgba(15,23,42,.06), 0 1px 3px rgba(15,23,42,.05);
+    --shadow-md: 0 4px 14px rgba(15,23,42,.09);
+    --shadow-lg: 0 12px 28px rgba(15,23,42,.12);
+    --shadow-xl: 0 24px 60px rgba(15,23,42,.22);
+    /* radii */
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    /* focus ring (accessibility) */
+    --ring: 0 0 0 3px rgba(59,130,246,.35);
+    /* type */
+    --font-ui: 'Lexend', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; }
+  body { font-family: var(--font-body); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; line-height: 1.5; }
+  h1, h2, h3, .brand .name, .reco .disposition .big, .status-lg { font-family: var(--font-ui); letter-spacing: -0.01em; }
+  /* tabular figures for clinical data so columns don't shift */
+  .crm-grid, .dim-pill, .confidence, .status, .reco .disposition .big { font-variant-numeric: tabular-nums; }
+  button { font: inherit; cursor: pointer; }
+  input, textarea, select { font-family: var(--font-body); color: var(--text); }
+  textarea { font-family: var(--font-mono); }
+  a { color: var(--brand); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  /* visible keyboard focus everywhere (a11y) */
+  :focus-visible { outline: none; box-shadow: var(--ring); border-radius: 6px; }
+  ::selection { background: var(--brand-soft); }
+  /* subtle scrollbars */
+  * { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+
+  /* card/modal entrance (shared) */
+  @keyframes cardIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+
+  /* ---------- top bar ---------- */
+  .topbar { background: rgba(255,255,255,.86); backdrop-filter: saturate(180%) blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 30; }
+  .topbar-inner { max-width: 1280px; margin: 0 auto; padding: 11px 24px; display: flex; align-items: center; gap: 18px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+  .brand .mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--brand) 0%, var(--accent) 100%); color: white; display:grid; place-items:center; font-weight:800; font-size:13px; box-shadow: var(--shadow-xs); }
+  .brand .name { font-size: 15px; }
+  .brand .sub { color: var(--text-3); font-weight: 500; font-size: 13px; margin-left: 6px; }
+  .integrations { display: flex; gap: 8px; flex-wrap: wrap; margin-left: 12px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-2); font-size: 12px; color: var(--text-2); }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 2px var(--green-soft); }
+  .pill.warn .dot { background: var(--yellow); box-shadow: 0 0 0 2px var(--yellow-soft); }
+  .top-spacer { flex: 1; }
+  .user-chip { display: flex; align-items: center; gap: 10px; padding: 5px 10px 5px 5px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-2); transition: border-color .15s ease, box-shadow .15s ease; }
+  .user-chip:hover { border-color: var(--border-strong); box-shadow: var(--shadow-xs); }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--brand-2), var(--accent)); color: white; display:grid; place-items:center; font-weight:700; font-size:12px; }
+  .user-chip .who { font-size: 13px; line-height: 1.1; font-weight: 500; }
+  .user-chip .who small { color: var(--text-3); font-size: 11px; }
+
+  /* tabs */
+  .tabs { background: var(--surface); border-bottom: 1px solid var(--border); }
+  .tabs-inner { max-width: 1280px; margin: 0 auto; padding: 0 24px; display: flex; gap: 4px; }
+  .tab { background: transparent; border: 0; padding: 13px 16px; color: var(--text-2); font-weight: 500; font-family: var(--font-ui); border-bottom: 2px solid transparent; transition: color .15s ease, border-color .15s ease; }
+  .tab.active { color: var(--brand); border-bottom-color: var(--brand); }
+  .tab:hover { color: var(--text); }
+
+  /* layout */
+  .container { max-width: 1280px; margin: 24px auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+  .container.full { grid-template-columns: 1fr; }
+  @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .container { padding: 0 16px; margin: 16px auto; } .topbar-inner, .tabs-inner { padding-left: 16px; padding-right: 16px; } }
+
+  /* card */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); }
+  .card + .card { margin-top: 16px; }
+  .card h2 { margin: 0 0 14px; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .card h2 .step-num { background: var(--brand); color: #fff; font-size: 12px; font-weight: 700; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px; display: inline-grid; place-items: center; }
+  .muted { color: var(--text-3); }
+
+  /* form rows */
+  .row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
+  .row.three { grid-template-columns: 1fr 1fr 1fr; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; color: var(--text-2); font-weight: 600; }
+  .field input, .field select, .field textarea { padding: 10px 12px; min-height: 42px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: white; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
+  .field input::placeholder, .field textarea::placeholder { color: #9aa7ba; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--brand-2); box-shadow: var(--ring); }
+  .field input:disabled, .field select:disabled { background: var(--surface-2); color: var(--text-3); cursor: not-allowed; }
+  textarea { resize: vertical; min-height: 200px; line-height: 1.55; }
+
+  .btn { background: var(--brand); color: white; border: 0; padding: 10px 16px; border-radius: var(--radius-sm); font-weight: 600; font-family: var(--font-ui); transition: background .15s ease, transform .08s ease, box-shadow .15s ease; }
+  .btn:hover { background: var(--brand-strong); }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { background: #aeb9c9; cursor: not-allowed; transform: none; }
+  .btn.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); }
+  .btn.secondary:hover { background: var(--surface-2); border-color: #b4c0d0; }
+  .btn.ghost { background: transparent; color: var(--text-2); border: 0; }
+  .btn.ghost:hover { background: var(--surface-2); color: var(--text); }
+  .btn.danger { background: var(--red); }
+  .btn.danger:hover { background: #b91c1c; }
+  .btn.small { padding: 7px 12px; font-size: 13px; }
+
+  /* CRM card */
+  .crm-card { display: grid; grid-template-columns: 56px 1fr; gap: 14px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: linear-gradient(180deg, #eff6ff 0%, #ffffff 65%); }
+  .crm-card .crm-avatar { width:56px; height:56px; border-radius: 14px; background: linear-gradient(135deg, var(--brand), var(--accent)); color:white; display:grid; place-items:center; font-weight:700; font-size:20px; box-shadow: var(--shadow-sm); }
+  .crm-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px 18px; font-size: 13px; }
+  .crm-grid div { font-weight: 500; }
+  .crm-grid div span { color: var(--text-3); display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 1px; }
+  .crm-empty { padding: 16px; border: 1px dashed var(--border-strong); border-radius: var(--radius); color: var(--text-3); font-size: 13px; line-height: 1.5; background: var(--surface-2); }
+
+  /* import strip */
+  .import-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  .import-strip .btn { font-size: 13px; padding: 8px 12px; display: inline-flex; align-items: center; gap: 6px; }
+  .brand-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* transcript box — auto-grows to fit the whole conversation (no scroll) */
+  #transcript { min-height: 380px; white-space: pre-wrap; overflow: hidden; tab-size: 2; }
+  @media (max-width: 640px) { #transcript { min-height: 300px; } }
+
+  /* sample-patient picker */
+  .patient-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 760px) { .patient-picker { grid-template-columns: 1fr; } }
+  .patient-pick { display: flex; align-items: center; gap: 12px; text-align: left; padding: 14px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); transition: border-color .15s ease, box-shadow .15s ease, transform .08s ease, background .15s ease; }
+  .patient-pick:hover { border-color: var(--brand-2); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+  .patient-pick:active { transform: translateY(0); }
+  .patient-pick.active { border-color: var(--brand); background: var(--brand-soft); box-shadow: var(--ring); }
+  .pp-avatar { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--brand), var(--accent)); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 14px; font-family: var(--font-ui); flex: none; }
+  .pp-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .pp-name { font-weight: 600; font-size: 14px; color: var(--text); }
+  .pp-case { font-size: 12px; color: var(--text-3); }
+
+  /* status colors */
+  .status { padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; display: inline-block; }
+  .status.status-lg { font-size: 18px; font-weight: 700; padding: 7px 18px; letter-spacing: -0.01em; }
+  .status.Cleared           { background: var(--green-soft);  color: #166534; }
+  .status.Hold              { background: var(--blue-soft);   color: #1d4ed8; }
+  .status.Action            { background: var(--blue-soft);   color: #1d4ed8; }
+  .status.ActionRequired    { background: var(--blue-soft);   color: #1d4ed8; }
+  .status.Review            { background: var(--yellow-soft); color: #854d0e; }
+  .status.Revision          { background: var(--yellow-soft); color: #854d0e; }
+  .status.RevisionCase      { background: var(--yellow-soft); color: #854d0e; }
+  .status.HighComplexity    { background: var(--orange-soft); color: #9a3412; }
+  .status.Deferred          { background: var(--orange-soft); color: #9a3412; }
+  .status.Ineligible        { background: var(--red-soft);    color: #991b1b; }
+  /* "Pending - Callback Required" becomes "Pending-CallbackRequired" after statusClass() */
+  .status.Pending-CallbackRequired { background: var(--surface-2); color: var(--text-2); border: 1px dashed var(--border-strong); }
+
+  /* findings */
+  .finding { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; background: var(--surface-2); transition: border-color .15s ease, box-shadow .15s ease; }
+  .finding:hover { border-color: var(--border-strong); box-shadow: var(--shadow-xs); }
+  .finding + .finding { margin-top: 10px; }
+  .finding header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+  .sop-id { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); font-weight: 500; }
+  .finding h3 { margin: 0; font-size: 14px; font-weight: 600; }
+  .finding p { margin: 6px 0 0; font-size: 13px; color: var(--text-2); line-height: 1.55; }
+  .finding .evidence { margin-top: 8px; padding: 9px 11px; background: white; border-left: 3px solid var(--brand-2); font-size: 12px; color: var(--text-2); border-radius: 0 6px 6px 0; line-height: 1.5; }
+
+  /* recommendation */
+  .reco { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 800px) { .reco { grid-template-columns: 1fr; } }
+  .reco .pane { padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); }
+  .reco .pane h3 { margin: 0 0 8px; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; }
+  .reco .disposition .big { font-size: 23px; font-weight: 700; }
+  .reco .disposition .reason { color: var(--text-2); font-size: 13px; margin-top: 4px; }
+  .reco .summary-text { font-size: 14px; line-height: 1.55; color: var(--text); }
+  .reco .reco-narrative { font-size: 14px; line-height: 1.55; color: var(--text); margin-top: 8px; }
+  .reco-decision-row { display: flex; gap: 8px; }
+  .reco-decision-locked { padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-top: 6px; }
+  .reco-decision-locked.agree { background: var(--green-soft); color: #166534; border: 1px solid #86efac; }
+  .reco-decision-locked.disagree { background: var(--orange-soft); color: #9a3412; border: 1px solid #fdba74; }
+  .disagree-banner { padding: 16px 18px; border-radius: 10px; background: var(--orange-soft); color: #9a3412; border: 1px solid #fdba74; font-size: 14px; line-height: 1.5; }
+  .disagree-banner strong { display: block; font-size: 16px; margin-bottom: 4px; }
+
+  /* next steps */
+  ol.steps { padding-left: 0; list-style: none; margin: 0; }
+  ol.steps li { display: grid; grid-template-columns: 28px 1fr; gap: 10px 12px; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); transition: border-color .15s ease, background .15s ease; }
+  ol.steps li + li { margin-top: 8px; }
+  ol.steps li.flagged { border-color: #fca5a5; background: var(--red-soft); }
+  ol.steps li.done { border-color: #86efac; background: var(--green-soft); }
+  ol.steps .num { width: 26px; height: 26px; border-radius: 50%; background: var(--brand); color: #fff; display:grid; place-items:center; font-size: 12px; font-weight: 700; }
+  .step-text { font-size: 13px; line-height: 1.55; }
+  .badge-prefix { display: inline-block; font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--brand); background: var(--brand-soft); padding: 1px 6px; border-radius: 5px; margin-right: 6px; }
+  .step-evidence { background: white; border-left: 3px solid var(--brand-2); padding: 7px 11px; border-radius: 0 6px 6px 0; font-size: 12px; color: var(--text-2); margin-top: 6px; line-height: 1.5; }
+  .step-evidence-label { font-weight: 600; color: var(--brand); margin-right: 6px; text-transform: uppercase; font-size: 10px; letter-spacing: .04em; }
+  .step-evidence-text { font-style: italic; }
+  .step-controls { grid-column: 2; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .thumb-btn { background: white; border: 1px solid var(--border-strong); border-radius: 999px; min-width: 38px; padding: 6px 12px; font-size: 14px; line-height: 1; cursor: pointer; transition: transform .08s ease, background .15s ease, border-color .15s ease; }
+  .thumb-btn:hover { transform: translateY(-1px); border-color: #b4c0d0; }
+  .thumb-btn.active.up { background: var(--green-soft); border-color: var(--green); }
+  .thumb-btn.active.down { background: var(--red-soft); border-color: var(--red); }
+  .step-cta { background: var(--brand); color: white; border: 0; padding: 7px 13px; border-radius: var(--radius-sm); font-weight: 600; font-family: var(--font-ui); font-size: 12px; cursor: pointer; transition: background .15s ease; }
+  .step-cta:hover:not(:disabled) { background: var(--brand-strong); }
+  .step-cta:disabled { background: #dbe2ec; color: #94a3b8; cursor: not-allowed; }
+  .step-cta.done { background: var(--green); }
+  .step-status { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; margin-left: auto; }
+  .step-status.flagged { background: var(--red-soft); color: #991b1b; }
+  .step-status.done { background: var(--green-soft); color: #166534; }
+
+  /* Draft patient email */
+  .email-draft-heading { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3); }
+  .email-draft { width: 100%; min-height: 240px; padding: 12px; border: 1px solid var(--border-strong); border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; font-size: 12px; line-height: 1.55; color: var(--text); background: white; resize: vertical; box-sizing: border-box; }
+
+  /* Clinical extraction card */
+  .extraction-section { margin-top: 12px; }
+  .extraction-section + .extraction-section { padding-top: 12px; border-top: 1px dashed var(--border); }
+  .extraction-section h3 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3); }
+  .flag-row { display: grid; grid-template-columns: minmax(160px, 1fr) auto auto; gap: 10px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); align-items: start; }
+  .flag-row + .flag-row { margin-top: 6px; }
+  .flag-name { font-family: ui-monospace, monospace; font-size: 12px; color: var(--text-2); }
+  .flag-name strong { color: var(--text); display: block; font-family: inherit; font-size: 13px; font-weight: 600; }
+  .flag-quote { grid-column: 1 / -1; font-size: 12px; color: var(--text-3); font-style: italic; padding: 6px 8px; background: white; border-left: 3px solid var(--brand-2); border-radius: 4px; margin-top: 4px; }
+  .flag-value { font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: white; border: 1px solid var(--border); white-space: nowrap; }
+  .flag-value.true  { background: var(--green-soft); color: #166534; border-color: #86efac; }
+  .flag-value.false { background: var(--red-soft);   color: #991b1b; border-color: #fca5a5; }
+  .flag-value.null  { background: var(--surface-2);  color: var(--text-3); }
+  .flag-conf { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
+  .flag-conf.high   { background: var(--green-soft);  color: #166534; }
+  .flag-conf.medium { background: var(--yellow-soft); color: #854d0e; }
+  .flag-conf.low    { background: var(--red-soft);    color: #991b1b; }
+  .flag-conf.null   { background: var(--surface-2);   color: var(--text-3); }
+  .review-banner { margin: 10px 0; padding: 10px 12px; border-radius: 8px; background: var(--orange-soft); color: #9a3412; border: 1px solid #fdba74; font-size: 13px; font-weight: 600; }
+
+  /* Evaluation card */
+  .dim-list { display: flex; flex-direction: column; gap: 8px; }
+  .dim-row { display: grid; grid-template-columns: minmax(200px, 1fr) auto minmax(0, 2fr); gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
+  .dim-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .dim-pill { white-space: nowrap; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+  .dim-reason { font-size: 12px; color: var(--text-2); font-style: italic; }
+  .escalation-banner { margin: 10px 0; padding: 12px 14px; border-radius: 8px; background: var(--red-soft); color: #991b1b; border: 1px solid #fca5a5; font-size: 13px; font-weight: 600; }
+  .evaluator-notes { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border); font-size: 12px; color: var(--text-2); }
+  .evaluator-notes strong { color: var(--text); }
+  .extraction-meta { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border); font-size: 12px; color: var(--text-2); }
+  .extraction-meta strong { color: var(--text); }
+
+  /* AI evaluation confidence pill */
+  .confidence { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid transparent; cursor: help; }
+  .confidence.green  { background: var(--green-soft);  color: #166534; border-color: #86efac; }
+  .confidence.yellow { background: var(--yellow-soft); color: #854d0e; border-color: #fde68a; }
+  .confidence.red    { background: var(--red-soft);    color: #991b1b; border-color: #fca5a5; }
+  .confidence.loading { background: var(--surface-2); color: var(--text-3); border-color: var(--border); font-weight: 500; }
+  .confidence-label { font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; opacity: .8; }
+  .confidence-rationale { font-size: 11px; color: var(--text-3); margin-top: 4px; font-style: italic; }
+
+  /* SOP library */
+  .sop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+  .sop-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-xs); transition: border-color .15s ease, box-shadow .15s ease, transform .12s ease; }
+  .sop-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+  .sop-card header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .sop-card .id { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); font-weight: 500; }
+  .sop-card h3 { margin: 0; font-size: 14px; font-weight: 600; }
+  .sop-card .meta { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+  .sop-card p { font-size: 13px; color: var(--text-2); margin: 8px 0; }
+  .sop-card .actions { display: flex; gap: 6px; margin-top: 8px; }
+
+  /* modal */
+  .modal-bg { position: fixed; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .modal-bg.show { display: flex; animation: fadeIn .15s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal { background: var(--surface); width: min(640px, 92vw); max-height: 88vh; overflow: auto; border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-xl); animation: cardIn .22s cubic-bezier(.16,1,.3,1); }
+  .modal h2 { margin: 0 0 12px; font-size: 18px; font-weight: 600; }
+  .modal .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+  /* toast */
+  .toast { position: fixed; bottom: 22px; right: 22px; background: #0f172a; color: white; padding: 11px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; box-shadow: var(--shadow-lg); display:none; z-index: 80; }
+  .toast.show { display: block; animation: slideUp .2s ease; }
+  @keyframes slideUp { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  /* connect overlay */
+  .connect-overlay { display: none; align-items: center; justify-content: center; padding: 18px; border: 1px dashed var(--border-strong); border-radius: var(--radius); background: linear-gradient(180deg,#eff6ff,#fff); margin-top: 12px; font-weight: 500; }
+  .connect-overlay.show { display: flex; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--brand-soft); border-top-color: var(--brand); border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .lock-mask { opacity: .55; pointer-events: none; }
+  .hidden { display: none !important; }
+
+  .footer-note { color: var(--text-3); font-size: 12px; margin-top: 22px; text-align: center; }
+
+  /* ============================================================
+     DEEPER PASS — hierarchy, status-color-coding, section rhythm
+     (CSS-only; keys off existing badge/score classes via :has())
+     ============================================================ */
+
+  /* section rhythm — clearer separation between result cards */
+  #resultsContainer > .card + .card { margin-top: 18px; }
+  /* keep cards clear of the sticky topbar when scrolled/anchored */
+  .card { scroll-margin-top: 84px; }
+
+  /* card headers read as section dividers */
+  .card > h2:first-child { padding-bottom: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border); font-size: 16px; letter-spacing: -0.01em; }
+
+  /* --- Recommendation / disposition as the hero --- */
+  .reco .disposition { position: relative; overflow: hidden; background: linear-gradient(180deg, #f8fbff 0%, #ffffff 70%); border-color: var(--border-strong); }
+  .reco .disposition .big { margin: 4px 0 10px; }
+  .reco .reco-narrative { font-size: 14px; }
+  /* left accent stripe on the disposition pane, tinted by the status badge it contains */
+  .reco .disposition::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background: var(--brand); }
+  .reco .disposition:has(.status.Ineligible)::before            { background: var(--red); }
+  .reco .disposition:has(.status.Deferred)::before,
+  .reco .disposition:has(.status.HighComplexity)::before        { background: var(--orange); }
+  .reco .disposition:has(.status.Review)::before,
+  .reco .disposition:has(.status.Revision)::before,
+  .reco .disposition:has(.status.RevisionCase)::before          { background: var(--yellow); }
+  .reco .disposition:has(.status.Cleared)::before               { background: var(--green); }
+  .reco .disposition:has(.status.Pending-CallbackRequired)::before { background: var(--text-3); }
+
+  /* --- Findings: left accent + soft tint keyed off the status badge --- */
+  .finding { border-left-width: 4px; }
+  .finding:has(.status.Ineligible)         { border-left-color: var(--red);    background: linear-gradient(90deg, #fef5f5, var(--surface-2) 40%); }
+  .finding:has(.status.Deferred),
+  .finding:has(.status.HighComplexity)     { border-left-color: var(--orange); background: linear-gradient(90deg, #fff7f0, var(--surface-2) 40%); }
+  .finding:has(.status.Review),
+  .finding:has(.status.Revision),
+  .finding:has(.status.RevisionCase)       { border-left-color: var(--yellow); background: linear-gradient(90deg, #fefcf0, var(--surface-2) 40%); }
+  .finding:has(.status.Hold),
+  .finding:has(.status.Action),
+  .finding:has(.status.ActionRequired)     { border-left-color: var(--brand);  background: linear-gradient(90deg, #f4f8ff, var(--surface-2) 40%); }
+  .finding:has(.status.Cleared)            { border-left-color: var(--green);  background: linear-gradient(90deg, #f3fbf5, var(--surface-2) 40%); }
+
+  /* --- Evaluation rows: left accent keyed off the score pill color --- */
+  .dim-row { border-left-width: 4px; padding: 12px 14px; }
+  .dim-row:has(.confidence.green)  { border-left-color: var(--green); }
+  .dim-row:has(.confidence.yellow) { border-left-color: var(--yellow); }
+  .dim-row:has(.confidence.red)    { border-left-color: var(--red); }
+  .dim-row:has(.confidence.loading){ border-left-color: var(--border-strong); }
+  .dim-name { font-weight: 600; }
+  .dim-pill { min-width: 64px; text-align: center; }
+
+  /* --- Banners get a consistent accent bar + breathing room --- */
+  .escalation-banner, .review-banner, .disagree-banner { border-left-width: 4px; border-left-style: solid; }
+  .escalation-banner { border-left-color: var(--red); }
+  .review-banner, .disagree-banner { border-left-color: var(--orange); }
+
+  /* --- Agree/Disagree decision: comfortable touch targets --- */
+  .reco-decision-row .btn { padding: 9px 18px; min-height: 40px; }
+  .reco-decision-locked { display: flex; align-items: center; gap: 8px; }
+  .reco-decision-locked::before { content: ""; width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .reco-decision-locked.agree::before { background: var(--green); }
+  .reco-decision-locked.disagree::before { background: var(--orange); }
+
+  /* staggered reveal of result cards (respects reduced-motion below) */
+  #resultsContainer > * { animation: cardIn .3s cubic-bezier(.16,1,.3,1) both; }
+  #resultsContainer > *:nth-child(2) { animation-delay: .04s; }
+  #resultsContainer > *:nth-child(3) { animation-delay: .08s; }
+  #resultsContainer > *:nth-child(4) { animation-delay: .12s; }
+  #resultsContainer > *:nth-child(5) { animation-delay: .16s; }
+
+  /* respect reduced motion (a11y) */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+    .spinner { animation-duration: 1s !important; animation-iteration-count: infinite !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ---------- App shell (public - no SSO gate) ---------- -->
+<div id="appRoot">
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="mark">P</div>
+        <div class="name">Premier Care<span class="sub">Specialist Console</span></div>
+      </div>
+      <div class="top-spacer"></div>
+      <div class="user-chip" id="userChip">
+        <div class="avatar" id="userAvatar">JG</div>
+        <div class="who">
+          <div id="userName">Jordan G</div>
+          <small>Care Specialist</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tabs-inner">
+      <button class="tab active" data-tab="analyzer" onclick="showTab('analyzer')">Transcript Analyzer</button>
+      <button class="tab" data-tab="sops" onclick="showTab('sops')">SOP Library</button>
+    </div>
+  </div>
+
+  <!-- ---------- Analyzer view ---------- -->
+  <div id="view-analyzer" class="container full">
+    <div class="main-col">
+
+      <div class="card">
+        <h2><span class="step-num">1</span> Select a sample patient</h2>
+        <div class="muted" style="font-size:13px; margin-bottom:14px;">Pick a patient to load their call transcript automatically - no file upload required. Then click <strong>Analyze</strong> below.</div>
+        <div class="patient-picker">
+          <button type="button" class="patient-pick" data-key="sarah" onclick="loadSamplePatient('sarah')">
+            <span class="pp-avatar">SM</span>
+            <span class="pp-meta"><span class="pp-name">Sarah Mitchell</span><span class="pp-case">Bariatric &middot; Sleeve revision</span></span>
+          </button>
+          <button type="button" class="patient-pick" data-key="bob" onclick="loadSamplePatient('bob')">
+            <span class="pp-avatar">RC</span>
+            <span class="pp-meta"><span class="pp-name">Robert Carlson</span><span class="pp-case">Joint &middot; Hip replacement</span></span>
+          </button>
+          <button type="button" class="patient-pick" data-key="maria" onclick="loadSamplePatient('maria')">
+            <span class="pp-avatar">MA</span>
+            <span class="pp-meta"><span class="pp-name">Maria Alvarez</span><span class="pp-case">Joint &middot; Knee, comorbidities</span></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="step-num">2</span> Patient lookup</h2>
+        <div class="row">
+          <div class="field">
+            <label for="lkName">Patient name</label>
+            <input id="lkName" type="text" placeholder="e.g. Sarah Mitchell" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="lkId">Patient ID</label>
+            <input id="lkId" type="text" placeholder="e.g. P-10042" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button class="btn" id="lookupBtn" onclick="onLookup()">Look up</button>
+          </div>
+        </div>
+        <div class="connect-overlay" id="connectOverlay">
+          <div class="spinner"></div>
+          <div class="muted">Connecting to EHR (Salesforce Health Cloud)...</div>
+        </div>
+        <div id="crmPanel" style="margin-top: 12px;"></div>
+        <div style="margin-top: 8px; display:flex; gap:8px;">
+          <button class="btn ghost small" id="resetLookupBtn" onclick="onLookupReset()" style="display:none;">Reset patient</button>
+        </div>
+      </div>
+
+      <div class="card" id="transcriptCard">
+        <h2><span class="step-num">3</span> Call transcript</h2>
+        <div class="muted" style="font-size:13px; margin-bottom:8px;">Loaded automatically from the patient you selected above. You can also edit it, paste your own, or upload a file.</div>
+        <div class="field">
+          <textarea id="transcript" placeholder="Paste the call transcript here..." oninput="autoGrowTranscript()"></textarea>
+        </div>
+        <div class="import-strip">
+          <input type="file" id="fileInput" accept=".txt,.md,.log,.html,.htm,.json,.csv,.xml,.srt,.vtt,.docx,.pdf" style="display:none" onchange="onFileChosen(event)" />
+          <button class="btn secondary small" onclick="document.getElementById('fileInput').click()">Upload file</button>
+          <button class="btn ghost small" id="patientResetBtn" onclick="onPatientReset()" style="display:none;">Patient Reset</button>
+          <button class="btn secondary small" onclick="document.getElementById('fileInput').click()">
+            <svg class="brand-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+            Import from Google Workspace
+          </button>
+          <button class="btn secondary small" onclick="document.getElementById('fileInput').click()">
+            <svg class="brand-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#00B5E2"/><text x="12" y="16.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="13" fill="white">5</text></svg>
+            Import from Five9
+          </button>
+          <span class="top-spacer"></span>
+          <button class="btn small" id="analyzeBtn" onclick="onAnalyze()">Analyze</button>
+        </div>
+      </div>
+
+      <div id="resultsContainer"></div>
+
+    </div>
+  </div>
+
+  <!-- ---------- SOP Library view ---------- -->
+  <div id="view-sops" class="container full hidden">
+    <div class="card">
+      <div style="margin-bottom: 12px;">
+        <h2 style="margin:0;">SOP Library</h2>
+        <div class="muted" style="font-size:13px;">Read-only view of the protocols the analyzer uses.</div>
+      </div>
+      <div class="sop-grid" id="sopGrid"></div>
+    </div>
+  </div>
+
+  <div class="footer-note">Premier Care Specialist Console - demo environment.</div>
+</div>
+
+<!-- ---------- Generic confirm modal (no "domain says" prefix) ---------- -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal" style="max-width:480px;">
+    <h2 id="confirmModalTitle">Please confirm</h2>
+    <p id="confirmModalBody" class="muted" style="font-size:14px; margin:6px 0 16px;"></p>
+    <div class="modal-foot">
+      <button class="btn ghost" id="confirmModalCancel">Cancel</button>
+      <button class="btn" id="confirmModalOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- Step thumbs-down notes modal ---------- -->
+<div class="modal-bg" id="stepDownModal">
+  <div class="modal">
+    <h2>Flag step for follow-up</h2>
+    <p class="muted" style="margin-top:0; font-size:13px;">You've flagged this step for manual follow-up. Capture your notes, then push them to the patient's EHR profile.</p>
+    <div class="field">
+      <label>Step</label>
+      <div id="stepDownStepText" class="muted" style="font-size:13px; padding:8px 10px; background:var(--surface-2); border:1px solid var(--border); border-radius:6px;"></div>
+    </div>
+    <div class="field">
+      <label for="stepDownNotes">Notes</label>
+      <textarea id="stepDownNotes" style="min-height:140px;" placeholder="Why are you flagging this step? Any follow-up needed..."></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="onStepDownCancel()">Cancel</button>
+      <button class="btn" onclick="onStepDownPush()">Push to Patient Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- Disagree notes modal ---------- -->
+<div class="modal-bg" id="disagreeModal">
+  <div class="modal">
+    <h2>Specialist notes</h2>
+    <p class="muted" style="margin-top:0; font-size:13px;">You've indicated you disagree with the recommendation. Capture your own notes or alternative recommendation, then push them to the patient's EHR profile, or cancel to revisit the decision.</p>
+    <div class="field">
+      <label for="disagreeNotes">Notes / alternative recommendation</label>
+      <textarea id="disagreeNotes" style="min-height:180px;" placeholder="Type your notes or alternative recommendation here..."></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="onDisagreeCancel()">Cancel</button>
+      <button class="btn" onclick="onDisagreePush()">Push Notes to Patient Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- SOP edit modal removed - SOP Library is read-only. -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+//---- state ----
+let CURRENT_USER = null;
+let CURRENT_CRM = null;
+let SOPS = [];
+let LAST_RESULT = null;
+let STEP_STATE = []; // [{ vote: null|'up'|'down', done: false }]
+let COPIED_STEP_MESSAGES = []; // [{stepIndex, sopId, stepText, message}] - captured per analysis
+let ACTIVE_STEP_DOWN_INDEX = -1; // which step is the open step-down modal annotating
+const SESSION_TRANSCRIPT_HASHES = new Set();
+
+// Allowed upload extensions - must match the `accept` attribute on #fileInput.
+const ALLOWED_EXTS = ["txt","md","log","html","htm","json","csv","xml","srt","vtt","docx","pdf"];
+
+// Soft thresholds for transcript size warnings.
+const MAX_WORDS_SOFT = 15000;
+const MIN_CHARS_SOFT = 200;
+
+async function sha256Hex(text){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+function countWords(s){ return (String(s).trim().match(/\S+/g) || []).length; }
+
+//---- utility ----
+function $(id){ return document.getElementById(id); }
+function statusClass(s){ return (s || "Cleared").replace(/\s+/g,""); }
+function escapeHtml(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 2200); }
+function api(path, opts){ return fetch(path, Object.assign({headers:{'Content-Type':'application/json'}}, opts||{})).then(r => r.json()); }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+//---- SSO ----
+//---- app init (public demo - no SSO gate) ----
+const SPECIALIST = { name: "Jordan G", avatar_initials: "JG", role: "Care Specialist" };
+
+// Canned sample transcripts (mirrors pages/api/integrations/import.js) so a
+// public user can run the analyzer without uploading anything.
+const SAMPLE_PATIENTS = {
+  sarah: { name: "Sarah Mitchell", id: "P-10042", transcript:
+`Care Team: "Hi Sarah, I just wanted to verify a few details from your pre-consultation profile. To get you scheduled for your consultation, we need to clarify your surgical history. You mentioned you'd already had a prior weight-loss procedure. Could you tell me exactly what that was and when?"
+
+Sarah T: "Yeah, I had the lap band put in back in 2017 in Philadelphia. I'm having it removed and hopefully getting the sleeve done now. Does that matter?"
+
+Care Team: "It does, thank you. One quick check - your employer's plan is paired with ABC Hospital. Are you working with a Registered Dietician (RD) currently?"
+
+Sarah T: "Um, well, yes, Dr. Jones's referred me to a nutritionist like three months ago when I started this process. I saw him once, but I don't really have my own RD."
+
+Care Team: "Got it, that's okay. We just need to ensure you have one identified before we refer you over. We will also need an endoscopy done before we can schedule surgery itself, so try to schedule that for right after your consult. Now, looking at your medical conditions, can you confirm if you are on any chronic immune suppression, or if you have any active infection, open wounds, or active cancer treatment?"
+
+Sarah T: "No active cancer. But, well, a chronic infection, I guess. I get these recurrent urinary tract infections all the time, maybe like once every couple of months. Is that a problem?"
+
+Care Team: "Okay, we'll note that down. Finally, any pending major dental work needed, and have you seen a dentist in the last 6 months?"
+
+Sarah T: "Yes, I just had my clean-up done in May, so I'm good there."
+
+Care Team: "Great, thanks Sarah. We'll finalize this part of your profile and get you set up for an initial consult."` },
+  bob: { name: "Robert Carlson", id: "P-10118", transcript:
+`Care Team: Hi Bob, this is the Carrum care team. We are wrapping up your initial profile to get you matched with your surgeon. We need to clarify a few answers from your questionnaire.
+
+Bob L: ok what do you need? my hip is killing me.
+
+Care Team: We're here to help. First, can you confirm if you have used any prescription pain medications, even just sometimes, to manage the hip pain?
+
+Bob L: yeah. My PCP gave me oxycodone 5mg to take when it was really bad, but i've been on it pretty much daily for 2 years.
+
+Care Team: Thank you, that's important for the anesthesiologist to know. Moving to your medical history - do you have any history of lower extremity severe trauma or deformity (accidents that required major surgery)?
+
+Bob L: No, never broke a leg. But I did have a blood clot in my right leg after I broke my ankle in college, if that counts.
+
+Care Team: Yes, we will note that history of blood clots. Are you currently using a walker or wheelchair and unable to walk more than 30 feet?
+
+Bob L: No, I still limp around on my own. Just. it hurts.
+
+Care Team: Got it. Last question for this step: Our records say you haven't attempted any conservative treatment, specifically physical therapy, for this hip pain. Is that correct?
+
+Bob L: I mean, i tried it. I did like two sessions of exercises in the gym. But it didn't help. This has to be surgical.
+
+Care Team: Got it. Thanks Bob! We have what we need. We'll be tough on next steps in the next 48 hours.` },
+  maria: { name: "Maria Alvarez", id: "P-10227", transcript:
+`Care Team: Hi Maria, I'm just trying to verify the final pieces of information for your intake so we can route your case appropriately. We need to check on your comorbidities. Do you have a history of HIV, AIDS, end-stage renal failure, or active cancer treatment?
+
+Maria V: Look, I've already answered these questions for my regular doctor three times this month. Why does Carrum need them again? I don't have any of those things. I'm just getting old and my knee is falling apart because nobody will help me!
+
+Care Team: I understand the frustration, Maria. We just want to make sure we have the most current info for the surgeon. How about your blood sugar? If you have diabetes, do you know what your last HbA1c lab result was? The most recent one.
+
+Maria V: I just had my physical last week and my doctor was annoyed because it was a 7.4. He's always nagging me to work on that, but it's hard when you can't walk to exercise!
+
+Care Team: I hear you. That 7.4 is a helpful number for us to have. Let's talk about lifestyle - and please be honest so we can keep you safe during surgery. Are you currently an active smoker, or have you quit within the last three months?
+
+Maria V: Is this where you tell me I can't have surgery because I have a cigarette with my coffee? Yes, I'm active. I smoke maybe a half-pack a day. I tried to quit last year and I lasted two weeks and was miserable the whole time. Are you going to deny me for that?
+
+Care Team: We're just gathering the facts for now, Maria. Have you been using oxygen dependence at home? And any substance or alcohol issues?
+
+Maria V: No oxygen, my lungs are the only thing that do work. And no, no substances. Now, are we done? I have an appointment.
+
+Care Team: One last piece, Maria. Regarding your conservative treatment: have you already had a course of formal physical therapy with a professional therapist for this knee pain?
+
+Maria V: Yes! I told the other lady this already! I did 12 weeks of PT with ABC Physical Therapy down the road. It was three days a week and it was exhausting. It helped for a little while, but then the pain came right back. I've done my time with the exercises.
+
+Care Team: Perfect, that's exactly the information we need. And Maria, I hear the frustration in your voice. I know it's exhausting to repeat your history and feel like you're stuck in a loop when you just want to feel better. I promise we're asking these specific questions - especially about the sugar levels and smoking - because we want your surgery to be a permanent success, not a safety risk.
+
+Maria V: I know... I just want to be able to walk to the mailbox without sitting down. It's a lot to manage on my own.
+
+Care Team: We're going to help you manage it. Here is what happens next: I'm going to review your details and follow up by Thursday afternoon with a clear roadmap for the next few weeks. Does that sound like a fair plan?
+
+Maria V: (Sighs) Yes. Thursday afternoon. I'll be waiting for the call. Thank you for listening to me complain.
+
+Care Team: You aren't complaining, Maria - you're advocating for your health. We're glad to have you with Carrum. Have a restful afternoon.` },
+};
+
+function initApp(){
+  CURRENT_USER = SPECIALIST;
+  $("userAvatar").textContent = SPECIALIST.avatar_initials;
+  $("userName").textContent = SPECIALIST.name;
+  refreshSops();
+}
+
+// Grow the transcript box to fit its full content so the whole conversation
+// is visible without scrolling (min 380px; caps at 75vh for very long pastes).
+function autoGrowTranscript(){
+  const t = $("transcript"); if (!t) return;
+  t.style.height = "auto";
+  const cap = Math.round(window.innerHeight * 0.75);
+  const target = Math.min(Math.max(t.scrollHeight + 2, 380), cap);
+  t.style.height = target + "px";
+  t.style.overflowY = (t.scrollHeight + 2 > cap) ? "auto" : "hidden";
+}
+
+// Load a sample patient: fill the transcript box + patient fields, then
+// auto-run the mock EHR lookup so the panel populates. No upload needed.
+async function loadSamplePatient(key){
+  const p = SAMPLE_PATIENTS[key];
+  if (!p) return;
+  onLookupReset();                 // clear any prior selection/lock cleanly
+  $("transcript").value = p.transcript;
+  autoGrowTranscript();            // expand box to show the full transcript
+  $("lkName").value = p.name;
+  $("lkId").value = p.id;
+  document.querySelectorAll(".patient-pick").forEach(b => b.classList.toggle("active", b.dataset.key === key));
+  await onLookup();                // populate the mock EHR record
+}
+
+//---- tabs ----
+function showTab(name){
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+  $("view-analyzer").classList.toggle("hidden", name !== "analyzer");
+  $("view-sops").classList.toggle("hidden", name !== "sops");
+}
+
+
+//---- patient lookup ----
+async function onLookup(){
+  const name = $("lkName").value.trim();
+  const id = $("lkId").value.trim();
+  if (!name && !id) { toast("Enter a name or patient ID."); return; }
+  $("lookupBtn").disabled = true;
+  $("connectOverlay").classList.add("show");
+  $("crmPanel").innerHTML = "";
+  // 5-second floor so the "connecting to CRM" feels real even when the API is instant
+  const apiCall = api("/api/crm/lookup", { method: "POST", body: JSON.stringify({ name, patient_id: id }) });
+  const [r] = await Promise.all([apiCall, sleep(2200)]);
+  $("connectOverlay").classList.remove("show");
+  $("lookupBtn").disabled = false;
+  CURRENT_CRM = r.crm_record || null;
+  renderCrm(r, name, id);
+  $("resetLookupBtn").style.display = "inline-block";
+  $("lkName").disabled = $("lkId").disabled = true;
+}
+function onLookupReset(){
+  CURRENT_CRM = null;
+  $("crmPanel").innerHTML = "";
+  $("lkName").disabled = $("lkId").disabled = false;
+  $("lkName").value = ""; $("lkId").value = "";
+  $("transcript").value = "";
+  autoGrowTranscript();
+  $("resultsContainer").innerHTML = "";
+  $("resetLookupBtn").style.display = "none";
+  const prb = $("patientResetBtn"); if (prb) prb.style.display = "none";
+  document.querySelectorAll(".patient-pick").forEach(b => b.classList.remove("active"));
+  LAST_RESULT = null;
+  COPIED_STEP_MESSAGES = [];
+}
+function onPatientReset(){ onLookupReset(); }
+function renderCrm(r, qName, qId){
+  const c = r.crm_record;
+  if (!c) {
+    $("crmPanel").innerHTML = `<div class="crm-empty">No EHR record for "${escapeHtml(qName||qId||"")}". The mock EHR only contains the 3 sample patients. ${escapeHtml(r.note||"")}</div>`;
+    return;
+  }
+  // EHR card shows only the fields defined in schemas/ehr-schema.json
+  // (name, location, employer, BMI, height/weight, phone). Other fields in
+  // crm.json (case_type, age, sex, primary_dx, patient_id) remain in the
+  // backing data for SOP gating but are not displayed.
+  const initials = c.name.split(/\s+/).slice(0,2).map(w => w[0]).join("");
+  $("crmPanel").innerHTML = `
+    <div class="crm-card">
+      <div class="crm-avatar">${escapeHtml(initials)}</div>
+      <div>
+        <div style="margin-bottom:6px;">
+          <strong>${escapeHtml(c.name)}</strong>
+        </div>
+        <div class="crm-grid">
+          <div><span>Age / Sex</span>${c.age} ${escapeHtml(c.sex)}</div>
+          <div><span>Location</span>${escapeHtml(c.location)}</div>
+          <div><span>Employer</span>${escapeHtml(c.employer)}</div>
+          <div><span>BMI</span>${c.bmi}</div>
+          <div><span>Height / Weight</span>${c.height_in}" / ${c.weight_lb} lb</div>
+          <div><span>Phone</span>${escapeHtml(c.phone)}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+//---- transcript input ----
+const TEXT_EXTS = ["txt","md","log","html","htm","json","csv","xml","srt","vtt"];
+
+function stripCaptionTimestamps(s){
+  // Remove SRT/VTT cue numbers, timestamps, and WEBVTT header. Leave dialogue lines.
+  return s
+    .replace(/^WEBVTT.*$/gim, "")
+    .replace(/^\d+\s*$/gm, "")
+    .replace(/^\d{2}:\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[.,]\d{3}.*$/gm, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function prettyRole(r){
+  if (!r) return "Speaker";
+  return String(r).replace(/[_\-]+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function flattenJsonTranscript(raw){
+  let obj;
+  try { obj = JSON.parse(raw); } catch { return raw; }
+
+  const findMessages = (node) => {
+    if (!node) return null;
+    if (Array.isArray(node) && node.length && typeof node[0] === "object") return node;
+    if (typeof node === "object") {
+      for (const key of ["messages","transcript","dialogue","conversation","turns","utterances","entries"]) {
+        if (Array.isArray(node[key])) return node[key];
+      }
+    }
+    return null;
+  };
+
+  const messages = findMessages(obj);
+  if (!messages) return raw;
+
+  // Build participant lookup if present (id/role -> name).
+  const partMap = {};
+  if (Array.isArray(obj.participants)) {
+    for (const p of obj.participants) {
+      const key = p.id || p.role || p.speaker_id || p.name;
+      if (key) partMap[String(key).toLowerCase()] = p.name || p.role || key;
+    }
+  }
+
+  const lines = [];
+  for (const m of messages) {
+    if (!m || typeof m !== "object") continue;
+    const speakerRaw = m.speaker || m.role || m.from || m.author || m.name || m.speaker_id || "Speaker";
+    const text = m.text || m.content || m.utterance || m.message || m.body || "";
+    if (!text) continue;
+    const lookup = partMap[String(speakerRaw).toLowerCase()];
+    const label = prettyRole(lookup || speakerRaw);
+    const ts = m.timestamp || m.time || m.start || "";
+    lines.push(`${label}${ts ? " ["+ts+"]" : ""}: ${String(text).trim()}`);
+  }
+
+  if (!lines.length) return raw;
+
+  let header = "";
+  if (obj.metadata) {
+    const md = obj.metadata;
+    const bits = [];
+    if (md.call_duration_sec) bits.push(`Duration: ${md.call_duration_sec}s`);
+    if (md.sentiment) bits.push(`Sentiment: ${md.sentiment}`);
+    if (Array.isArray(md.detected_topics) && md.detected_topics.length) bits.push(`Topics: ${md.detected_topics.join(", ")}`);
+    if (bits.length) header = `[${bits.join(" | ")}]\n\n`;
+  }
+  return header + lines.join("\n");
+}
+
+function stripHtml(s){
+  const tmp = document.createElement("div");
+  tmp.innerHTML = s;
+  return (tmp.textContent || tmp.innerText || "").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+function loadScriptOnce(src){
+  if (window.__scripts && window.__scripts[src]) return window.__scripts[src];
+  window.__scripts = window.__scripts || {};
+  const p = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src; s.onload = () => resolve(); s.onerror = () => reject(new Error("Failed to load "+src));
+    document.head.appendChild(s);
+  });
+  window.__scripts[src] = p;
+  return p;
+}
+
+async function readDocx(file){
+  await loadScriptOnce("https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js");
+  const buf = await file.arrayBuffer();
+  const result = await window.mammoth.extractRawText({ arrayBuffer: buf });
+  return result.value;
+}
+
+async function readPdf(file){
+  await loadScriptOnce("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.min.mjs").catch(async () => {
+    await loadScriptOnce("https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js");
+  });
+  const pdfjs = window["pdfjs-dist/build/pdf"] || window.pdfjsLib;
+  if (pdfjs && pdfjs.GlobalWorkerOptions) {
+    pdfjs.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+  }
+  const buf = await file.arrayBuffer();
+  const doc = await pdfjs.getDocument({ data: buf }).promise;
+  let text = "";
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(" ") + "\n\n";
+  }
+  return text.trim();
+}
+
+function readAsText(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = e => resolve(e.target.result);
+    r.onerror = () => reject(r.error);
+    r.readAsText(file);
+  });
+}
+
+async function onFileChosen(ev){
+  const f = ev.target.files[0]; if (!f) return;
+  const ext = (f.name.split(".").pop() || "").toLowerCase();
+  // Edge case: unsupported file type (image, archive, exe, etc.)
+  if (!ALLOWED_EXTS.includes(ext)) {
+    alert("File type \"."+ext+"\" isn't supported. Please upload a supported file type: " + ALLOWED_EXTS.map(e => "."+e).join(", "));
+    ev.target.value = "";
+    return;
+  }
+  toast("Loading "+f.name+"...");
+  try {
+    let text = "";
+    if (ext === "docx") {
+      text = await readDocx(f);
+    } else if (ext === "pdf") {
+      text = await readPdf(f);
+    } else if (TEXT_EXTS.includes(ext)) {
+      text = await readAsText(f);
+      if (ext === "srt" || ext === "vtt") text = stripCaptionTimestamps(text);
+      else if (ext === "html" || ext === "htm") text = stripHtml(text);
+      else if (ext === "json") text = flattenJsonTranscript(text);
+    } else {
+      text = await readAsText(f);
+    }
+    // Edge case: empty file.
+    if (!text || !text.trim()) {
+      alert("The uploaded file appears to be empty. Please check the export from your call platform.");
+      ev.target.value = "";
+      return;
+    }
+    $("transcript").value = text;
+    autoGrowTranscript();
+    toast("Loaded "+f.name);
+  } catch (e) {
+    // Edge case: encoding / parse errors from PDF, DOCX, or text decode.
+    alert("Could not read \""+f.name+"\". The file may use a non-standard encoding or be corrupt. Please re-export as UTF-8 text and try again.\n\nDetails: "+e.message);
+  } finally {
+    ev.target.value = "";
+  }
+}
+async function onImportSample(source){
+  toast("Importing from "+source+"...");
+  const r = await api("/api/integrations/import", { method:"POST", body: JSON.stringify({ source }) });
+  if (r.ok) { $("transcript").value = r.transcript; toast("Imported transcript from "+source); }
+}
+//---- analyze ----
+async function onAnalyze(){
+  const transcript = $("transcript").value.trim();
+  if (!transcript) { toast("Paste or import a transcript first."); return; }
+
+  // Edge case: transcript too short to be meaningful.
+  if (transcript.length < MIN_CHARS_SOFT) {
+    toast("This transcript appears incomplete. Extraction may produce limited results.");
+    // Allow proceed; the extractor will flag requires_human_review.
+  }
+
+  // Edge case: very long transcript - warn but allow.
+  const wc = countWords(transcript);
+  if (wc > MAX_WORDS_SOFT) {
+    if (!confirm("This transcript is unusually long ("+wc.toLocaleString()+" words). Processing may take longer than expected and may exceed the model's context window. Continue?")) return;
+  }
+
+  // CRM/transcript name match guard.
+  if (CURRENT_CRM) {
+    const aliases = (CURRENT_CRM.name_aliases || []).concat([CURRENT_CRM.name || ""]).filter(Boolean);
+    const lc = transcript.toLowerCase();
+    const matches = aliases.some(a => lc.includes(String(a).toLowerCase()));
+    if (!matches) {
+      alert("Error: the uploaded transcript does not match the selected patient profile (" + CURRENT_CRM.name + "). Please upload the correct EHR record before proceeding.");
+      onLookupReset();
+      return;
+    }
+  }
+
+  // Edge case: duplicate transcript in this session.
+  const hash = await sha256Hex(transcript);
+  if (SESSION_TRANSCRIPT_HASHES.has(hash)) {
+    if (!confirm("This transcript appears to have already been analyzed in this session. Do you want to re-analyze?")) return;
+  }
+
+  $("analyzeBtn").disabled = true; $("analyzeBtn").textContent = "Validating...";
+
+  // Edge case: non-clinical document OR non-English language - preflight check.
+  try {
+    const pre = await api("/api/preflight", { method: "POST", body: JSON.stringify({ transcript }) });
+    if (pre.ok) {
+      if (pre.is_clinical_transcript === false) {
+        alert("This document does not appear to be a patient care transcript. Please verify the file and re-upload.\n\nValidator: " + (pre.reason || "Non-clinical content detected."));
+        $("analyzeBtn").disabled = false; $("analyzeBtn").textContent = "Analyze";
+        return;
+      }
+      if (pre.detected_language && pre.detected_language !== "english") {
+        alert("English only is supported at this time. Detected language: " + pre.detected_language + ".");
+        $("analyzeBtn").disabled = false; $("analyzeBtn").textContent = "Analyze";
+        return;
+      }
+    }
+    // Non-ok preflight (e.g. 503 with no Claude key) silently skips this gate.
+  } catch (e) {
+    // Network error - don't block the user; log and proceed.
+    console.warn("Preflight skipped:", e.message);
+  }
+
+  SESSION_TRANSCRIPT_HASHES.add(hash);
+
+  // Rough token-budget warning. ~4 chars per token; analyze + extract both run, so we
+  // budget against ~150k input tokens before we get nervous about truncation.
+  const approxTokens = Math.ceil(transcript.length / 4);
+  if (approxTokens > 150000) {
+    if (!confirm("This transcript estimates ~" + approxTokens.toLocaleString() + " tokens, which may exceed the model's context window or truncate the response. Continue?")) {
+      $("analyzeBtn").disabled = false; $("analyzeBtn").textContent = "Analyze";
+      return;
+    }
+  }
+
+  $("analyzeBtn").textContent = "Analyzing...";
+  $("resultsContainer").innerHTML = `<div class="card"><div class="muted">Running analysis... <span class="spinner" style="display:inline-block; vertical-align:middle;"></span></div></div>`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s safety net
+  try {
+    const resp = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        transcript,
+        patient_name: $("lkName").value.trim(),
+        patient_id: $("lkId").value.trim()
+      }),
+      signal: controller.signal
+    });
+    const r = await resp.json();
+    if (!r.ok) throw new Error(r.error || "Analysis failed");
+    LAST_RESULT = r;
+    renderResults(r);
+  } catch (e) {
+    const isTimeout = e.name === "AbortError";
+    const msg = isTimeout
+      ? "Analysis is taking longer than expected. Please try again, or shorten the transcript if it is unusually long."
+      : "Error: " + e.message;
+    $("resultsContainer").innerHTML = `<div class="card"><strong>${escapeHtml(msg)}</strong></div>`;
+    if (isTimeout) console.warn("analyze timeout, transcript hash:", hash);
+  } finally {
+    clearTimeout(timeoutId);
+    $("analyzeBtn").disabled = false; $("analyzeBtn").textContent = "Analyze";
+  }
+}
+
+function renderResults(r){
+  const disp = r.overall_disposition || { status: "Cleared", reason: "" };
+  const findings = r.findings || [];
+  const steps = r.next_steps || [];
+  STEP_STATE = steps.map(() => ({ vote: null, done: false }));
+  COPIED_STEP_MESSAGES = [];
+  const prb = $("patientResetBtn"); if (prb) prb.style.display = "inline-block";
+
+  let html = `
+    <div class="card">
+      <h2>Analysis</h2>
+      <div class="reco">
+        <div class="pane">
+          <h3>Transcript Summary</h3>
+          <div class="summary-text">${escapeHtml(r.patient_summary || "")}</div>
+        </div>
+        <div class="pane disposition">
+          <h3 style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <span>Recommendation</span>
+            <span id="recoConfidence"></span>
+          </h3>
+          <div class="big"><span class="status status-lg ${statusClass(disp.status)}">${escapeHtml(disp.status)}</span></div>
+          <div class="reco-narrative"><strong>${escapeHtml(r.recommendation || disp.reason || "")}</strong></div>
+          <div class="confidence-rationale" id="recoRationale"></div>
+          <div class="reco-decision" id="recoDecision">
+            <div class="muted" style="font-size:12px; margin: 12px 0 6px;">Do you agree with this recommendation?</div>
+            <div class="reco-decision-row">
+              <button class="btn small" onclick="onRecoAgree()">Agree</button>
+              <button class="btn secondary small" onclick="onRecoDisagree()">Disagree</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card hidden" id="nextStepsWrapper">
+      <h2 style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+        <span>Next Steps</span>
+        <span id="stepsConfidence"></span>
+      </h2>
+      <div class="muted" style="font-size:12px; margin-bottom:8px;">Approve each step with a thumbs-up to unlock its automation, or thumbs-down to flag for manual follow-up.</div>
+      <div class="confidence-rationale" id="stepsRationale" style="margin-bottom:8px;"></div>
+      <ol class="steps" id="stepsList"></ol>
+      <div id="emailDraftContainer" style="margin-top:18px; padding-top:14px; border-top:1px dashed var(--border);"></div>
+    </div>
+
+    <div class="card" id="evaluationCard"></div>
+
+    <div class="card">
+      <h2>Triggered SOP Findings (${findings.length})</h2>
+      ${findings.length === 0 ? `<div class="muted">No SOPs triggered.</div>` : findings.map(f => `
+        <div class="finding">
+          <header>
+            <div>
+              <span class="sop-id">${escapeHtml(f.sop_id||"")}</span>
+              <h3 style="display:inline; margin-left:6px;">${escapeHtml(f.title||"")}</h3>
+            </div>
+            <span class="status ${statusClass(f.status)}">${escapeHtml(f.status||"")}</span>
+          </header>
+          <p><strong>Finding:</strong> ${escapeHtml(f.finding||"")}</p>
+          <p><strong>Action:</strong> ${escapeHtml(f.action||"")}</p>
+        </div>`).join("")}
+    </div>
+
+    ${(r.unresolvable && r.unresolvable.length) ? `
+    <div class="card">
+      <h2>Unresolvable Rules (${r.unresolvable.length})</h2>
+      <div class="muted" style="font-size:12px; margin-bottom:8px;">These SOP rules could not be evaluated because their required clinical flags were not captured in the call. They are excluded from the disposition and require follow-up data before re-evaluation.</div>
+      ${r.unresolvable.map(u => `
+        <div class="finding" style="border-style: dashed;">
+          <header>
+            <div>
+              <span class="sop-id">${escapeHtml(u.id || "")}</span>
+              <h3 style="display:inline; margin-left:6px;">${escapeHtml(u.finding || "")}</h3>
+            </div>
+            <span class="status Pending-CallbackRequired">Pending</span>
+          </header>
+          ${(u.missing_flags && u.missing_flags.length) ? `<p><strong>Missing flags:</strong> ${escapeHtml(u.missing_flags.join(", "))}</p>` : ""}
+        </div>`).join("")}
+    </div>
+    ` : ""}
+
+    <div class="card hidden" id="disagreeCard">
+      <div class="disagree-banner">
+        <strong>Recommendation declined</strong>
+        Please go back into the Patient profile in the EHR system to review the case.
+      </div>
+    </div>
+
+  `;
+  $("resultsContainer").innerHTML = html;
+  renderSteps();
+  runEvaluation(r);
+}
+
+function confidenceClass(score){
+  const s = Number(score);
+  if (isNaN(s)) return "loading";
+  if (s >= 76) return "green";
+  if (s >= 51) return "yellow";
+  return "red";
+}
+
+function paintConfidence(elId, rationaleId, label, score, rationale){
+  const el = $(elId); if (!el) return;
+  if (score == null) {
+    el.outerHTML = `<span id="${elId}"></span>`;
+    if (rationaleId && $(rationaleId)) $(rationaleId).textContent = "";
+    return;
+  }
+  el.outerHTML = `<span id="${elId}" class="confidence ${confidenceClass(score)}" title="${escapeHtml(rationale||"")}">
+      <span class="confidence-label">${escapeHtml(label)}</span>
+      <span>${Number(score)}/100</span>
+    </span>`;
+  if (rationaleId && $(rationaleId)) $(rationaleId).textContent = rationale || "";
+}
+
+function scoreToPercent(s){ return Math.round((Number(s) || 0) * 100); }
+function labelClass(label){
+  const l = String(label || "").toLowerCase();
+  if (l === "high") return "green";
+  if (l === "medium") return "yellow";
+  if (l === "low") return "red";
+  return "loading";
+}
+
+async function runEvaluation(r){
+  // Show loading pills first.
+  const reco = $("recoConfidence"); if (reco) reco.outerHTML = `<span id="recoConfidence" class="confidence loading"><span class="confidence-label">SOP Accuracy</span><span>scoring...</span></span>`;
+  const stp  = $("stepsConfidence"); if (stp) stp.outerHTML = `<span id="stepsConfidence" class="confidence loading"><span class="confidence-label">Actionability</span><span>scoring...</span></span>`;
+  const evCard = $("evaluationCard"); if (evCard) evCard.innerHTML = `<h2>Evaluation</h2><div class="muted" style="font-size:12px;">Scoring with Gemini... <span class="spinner" style="display:inline-block; vertical-align:middle;"></span></div>`;
+  try {
+    const transcript = $("transcript").value;
+    const resp = await api("/api/evaluate", {
+      method: "POST",
+      body: JSON.stringify({
+        transcript,
+        patient_summary: r.patient_summary,
+        recommendation: r.recommendation,
+        next_steps: r.next_steps,
+        findings: r.findings,
+        overall_disposition: r.overall_disposition,
+        extraction: r.extraction
+      })
+    });
+    if (!resp.ok) {
+      // Coerce non-string error fields so they don't render as [object Object].
+      const errStr = typeof resp.error === "string" ? resp.error : (resp.error ? JSON.stringify(resp.error) : "evaluation failed");
+      throw new Error(errStr);
+    }
+    const ev = resp.evaluation || {};
+    const sop = ev.sop_accuracy || {};
+    const act = ev.next_step_actionability || {};
+    paintConfidence("recoConfidence", "recoRationale", "SOP Accuracy", scoreToPercent(sop.score), sop.reason);
+    paintConfidence("stepsConfidence", "stepsRationale", "Actionability", scoreToPercent(act.score), act.reason);
+    renderEvaluation(ev, resp.model);
+  } catch (e) {
+    const msg = (typeof e?.message === "string" && e.message) ? e.message : String(e || "unknown error");
+    console.warn("Evaluation failed:", msg);
+    const reco = $("recoConfidence"); if (reco) reco.outerHTML = `<span id="recoConfidence" class="confidence loading" title="${escapeHtml(msg)}"><span class="confidence-label">Confidence</span><span>unavailable</span></span>`;
+    const stp  = $("stepsConfidence"); if (stp) stp.outerHTML = `<span id="stepsConfidence" class="confidence loading" title="${escapeHtml(msg)}"><span class="confidence-label">Confidence</span><span>unavailable</span></span>`;
+    if ($("recoRationale")) $("recoRationale").textContent = "Evaluation unavailable: " + msg;
+    if ($("stepsRationale")) $("stepsRationale").textContent = "";
+    const evCard = $("evaluationCard"); if (evCard) evCard.innerHTML = `<h2>Evaluation</h2><div class="muted" style="font-size:13px;">Evaluation unavailable: ${escapeHtml(msg)}</div>`;
+  }
+}
+
+function dimRow(name, dim){
+  const score = dim ? dim.score : null;
+  const pct = score == null ? null : scoreToPercent(score);
+  const cls = pct == null ? "loading" : confidenceClass(pct);
+  const reason = dim ? dim.reason : "";
+  return `
+    <div class="dim-row">
+      <div class="dim-name">${escapeHtml(name)}</div>
+      <div class="dim-pill confidence ${cls}">${pct == null ? "—" : pct + "/100"}</div>
+      <div class="dim-reason">${escapeHtml(reason || "")}</div>
+    </div>`;
+}
+
+function renderEvaluation(ev, model){
+  const card = $("evaluationCard"); if (!card) return;
+  if (!ev) { card.innerHTML = `<h2>Evaluation</h2><div class="muted">No evaluation returned.</div>`; return; }
+  const overallPct = scoreToPercent(ev.overall_score);
+  const overallCls = ev.score_label ? labelClass(ev.score_label) : confidenceClass(overallPct);
+  const escalationBanner = ev.needs_escalation
+    ? `<div class="escalation-banner">Escalation recommended${ev.escalation_reason ? ": " + escapeHtml(ev.escalation_reason) : ""}</div>`
+    : "";
+  const notes = ev.evaluator_notes
+    ? `<div class="evaluator-notes"><strong>Evaluator notes:</strong> ${escapeHtml(ev.evaluator_notes)}</div>`
+    : "";
+  card.innerHTML = `
+    <h2 style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+      <span>Evaluation</span>
+      <span class="confidence ${overallCls}">
+        <span class="confidence-label">Overall (${escapeHtml(ev.score_label || "—")})</span>
+        <span>${overallPct}/100</span>
+      </span>
+    </h2>
+    <div class="muted" style="font-size:12px; margin-bottom:10px;">Independent quality scoring across four dimensions${model ? " ("+escapeHtml(model)+")" : ""}. Weighted average: SOP Accuracy 40% / Extraction Completeness 30% / Actionability 20% / Human Review 10%.</div>
+    ${escalationBanner}
+    <div class="dim-list">
+      ${dimRow("SOP Accuracy (40%)", ev.sop_accuracy)}
+      ${dimRow("Extraction Completeness (30%)", ev.extraction_completeness)}
+      ${dimRow("Next Step Actionability (20%)", ev.next_step_actionability)}
+      ${dimRow("Human Review Appropriateness (10%)", ev.human_review_appropriateness)}
+    </div>
+    ${notes}`;
+}
+
+// Custom in-page confirm that avoids the browser-native `<domain> says` title.
+function customConfirm(message, { title = "Please confirm", okLabel = "Confirm", cancelLabel = "Cancel" } = {}) {
+  return new Promise(resolve => {
+    $("confirmModalTitle").textContent = title;
+    $("confirmModalBody").textContent = message;
+    const okBtn = $("confirmModalOk");
+    const cancelBtn = $("confirmModalCancel");
+    okBtn.textContent = okLabel;
+    cancelBtn.textContent = cancelLabel;
+    const cleanup = () => {
+      $("confirmModal").classList.remove("show");
+      okBtn.removeEventListener("click", onOk);
+      cancelBtn.removeEventListener("click", onCancel);
+    };
+    const onOk = () => { cleanup(); resolve(true); };
+    const onCancel = () => { cleanup(); resolve(false); };
+    okBtn.addEventListener("click", onOk);
+    cancelBtn.addEventListener("click", onCancel);
+    $("confirmModal").classList.add("show");
+  });
+}
+
+async function onRecoAgree(){
+  const ok = await customConfirm("Do you AGREE with this recommendation and want to proceed to the next steps?", { title: "Confirm recommendation", okLabel: "Yes, Agree" });
+  if (!ok) return;
+  const dec = $("recoDecision");
+  if (dec) dec.innerHTML = `<div class="reco-decision-locked agree">You agreed with the recommendation. Next steps are shown below.</div>`;
+  const ns = $("nextStepsWrapper"); if (ns) ns.classList.remove("hidden");
+  const dis = $("disagreeCard"); if (dis) dis.classList.add("hidden");
+}
+
+async function onRecoDisagree(){
+  const ok = await customConfirm("Do you DISAGREE with this recommendation?", { title: "Confirm decision", okLabel: "Yes, Disagree" });
+  if (!ok) return;
+  // Open the notes modal. The decision is not locked until the Specialist
+  // either pushes notes or cancels.
+  const ta = $("disagreeNotes"); if (ta) ta.value = "";
+  $("disagreeModal").classList.add("show");
+}
+
+function onDisagreeCancel(){
+  // Return to the un-decided state so the Specialist can choose again.
+  $("disagreeModal").classList.remove("show");
+  const dec = $("recoDecision");
+  if (dec) dec.innerHTML = `
+    <div class="muted" style="font-size:12px; margin: 12px 0 6px;">Do you agree with this recommendation?</div>
+    <div class="reco-decision-row">
+      <button class="btn small" onclick="onRecoAgree()">Agree</button>
+      <button class="btn secondary small" onclick="onRecoDisagree()">Disagree</button>
+    </div>`;
+  const dis = $("disagreeCard"); if (dis) dis.classList.add("hidden");
+}
+
+async function onDisagreePush(){
+  const ta = $("disagreeNotes");
+  const notes = ta ? ta.value.trim() : "";
+  if (!notes) { toast("Please add notes before pushing to the patient profile."); return; }
+  try {
+    const r = await api("/api/integrations/export", {
+      method: "POST",
+      body: JSON.stringify({
+        target: "ehr",
+        kind: "disagree_notes",
+        notes,
+        payload: LAST_RESULT
+      })
+    });
+    if (r.ok) toast("Notes pushed to patient profile - ref " + r.reference);
+    else { toast("Push failed: " + (r.error || "unknown")); return; }
+  } catch (e) {
+    toast("Push failed: " + e.message);
+    return;
+  }
+  // Lock the disagree state and surface the guidance banner.
+  $("disagreeModal").classList.remove("show");
+  const dec = $("recoDecision");
+  if (dec) dec.innerHTML = `<div class="reco-decision-locked disagree">Notes pushed to the patient profile. Please return to the EHR system to review the case.</div>`;
+  const ns = $("nextStepsWrapper"); if (ns) ns.classList.add("hidden");
+  const dis = $("disagreeCard"); if (dis) dis.classList.remove("hidden");
+}
+
+function formatStep(s){
+  const m = String(s).match(/^\[([A-Z]{2,4}-\d{3})\]\s*(.*)$/);
+  if (m) return `<span class="badge-prefix">${escapeHtml(m[1])}</span>${escapeHtml(m[2])}`;
+  return escapeHtml(s);
+}
+
+// Patient-communication SOPs: triggering action involves telling the patient something.
+// Internal-only SOPs (JNT-003 MD review, JNT-004 anesthesia consult, BAR-001 revision routing)
+// don't get a Copy Message button.
+const PATIENT_COMM_SOPS = new Set(["GEN-001", "JNT-001", "JNT-002", "BAR-002", "BAR-003"]);
+
+const PATIENT_MESSAGES_BY_SOP = {
+  "GEN-001": "Before your consultation, please complete a dental clearance exam. Many surgical pathways require recent dental clearance to reduce post-op infection risk.",
+  "JNT-001": "We'd like to enroll you in a smoking cessation program before moving forward with your case. We'll pause your case for three months to give you time to complete this step, and I'll share some support resources separately.",
+  "JNT-002": "Before we can proceed with the surgical pathway, you'll need to complete a 6-12 week course of supervised physical therapy. I can help connect you with an in-network provider.",
+  "JNT-003": "Your most recent A1c reading is above our program threshold. We'll flag this for clinical review so we can work with your provider on glucose optimization before surgery.",
+  "JNT-004": "Because you're on daily opioids, we'd like to schedule an anesthesia high-risk consult to plan a pre-op pain management strategy.",
+  "BAR-001": "Since you've had a prior weight-loss surgery, your case will be routed to our Revision Bariatric pathway for specialized surgical review.",
+  "BAR-002": "After your consultation, please schedule an upper endoscopy (EGD). This is required by our program before surgical planning can proceed.",
+  "BAR-003": "Before we can move your case forward, we need you to identify or be connected with a Registered Dietitian (RD). I can share an in-network RD list to help you start."
+};
+
+function isPatientCommStep(stepText){
+  const m = String(stepText).match(/^\[([A-Z]{2,4}-\d{3})\]/);
+  if (m && PATIENT_COMM_SOPS.has(m[1])) return true;
+  return /instruct|refer|provide|educate|notify patient|inform .*patient|send .*resources|cessation|questionnaire|follow.?up questionnaire/i.test(stepText);
+}
+
+function getPatientMessageForStep(stepText){
+  const m = String(stepText).match(/^\[([A-Z]{2,4}-\d{3})\]/);
+  if (m && PATIENT_MESSAGES_BY_SOP[m[1]]) return PATIENT_MESSAGES_BY_SOP[m[1]];
+  if (/notify patient of ineligibility/i.test(stepText))
+    return "After review, your case does not meet our program eligibility criteria at this time. I'll follow up with details and any alternative options we can offer.";
+  if (/90.?day follow.?up|cessation|deferred/i.test(stepText))
+    return "We'll check back with you in 90 days. In the meantime, I'll share some support resources so you can prepare.";
+  if (/hold|outstanding records/i.test(stepText))
+    return "Your case is currently on hold while we wait on a few items. I'll let you know as soon as we have what we need to move forward.";
+  if (/follow.?up questionnaire|questionnaire/i.test(stepText))
+    return "To make sure we route your case correctly, I'll need a bit more information than we captured on our call. I'll send you a short follow-up questionnaire shortly - please fill it out at your convenience so we can move things forward.";
+  return "Following up on our call, I wanted to share the next steps for your case.";
+}
+
+async function onCopyStepMessage(i){
+  const stepText = (LAST_RESULT && LAST_RESULT.next_steps && LAST_RESULT.next_steps[i]) || "";
+  const patientName = (LAST_RESULT && LAST_RESULT.crm_record && LAST_RESULT.crm_record.name) || "Patient";
+  const firstName = patientName.split(/\s+/)[0];
+  const specialistName = (CURRENT_USER && CURRENT_USER.name) || "Care Specialist";
+  const messageBody = getPatientMessageForStep(stepText);
+  const fullMsg = `Hi ${firstName},\n\nThank you for taking the time to speak with me. ${messageBody}\n\nPlease don't hesitate to reach out if you have any questions.\n\nBest regards,\n${specialistName}\nCare Specialist, Premier Health`;
+  try {
+    await navigator.clipboard.writeText(fullMsg);
+    const m = String(stepText).match(/^\[([A-Z]{2,4}-\d{3})\]/);
+    const sopId = m ? m[1] : null;
+    // Track for the eventual Draft Email aggregation. Dedupe by stepIndex.
+    if (!COPIED_STEP_MESSAGES.some(c => c.stepIndex === i)) {
+      COPIED_STEP_MESSAGES.push({ stepIndex: i, sopId, stepText, message: messageBody });
+    }
+    toast("Message copied (" + COPIED_STEP_MESSAGES.length + " saved for Draft Email)");
+    renderDraftEmailControls();
+  } catch (e) {
+    toast("Copy failed: " + e.message);
+  }
+}
+
+async function onCopyEmail(){
+  const ta = $("emailDraftText");
+  const text = ta ? ta.value : buildDraftEmail();
+  try { await navigator.clipboard.writeText(text); toast("Email copied to clipboard"); }
+  catch (e) { toast("Copy failed: " + e.message); }
+}
+
+function inferStepCta(stepText){
+  const t = String(stepText).toLowerCase();
+  if (/document.*(ehr|crm|record|call)|document the call/.test(t)) return { label: "Save note to EHR", target: "ehr", kind: "encounter_note" };
+  if (/notify .*patient|cessation|email|send .*resources/.test(t)) return { label: "Draft email in Outlook", target: "outlook", kind: "draft_email" };
+  if (/(schedule|set).*(follow.?up|check.?in|day)/.test(t)) return { label: "Schedule task in EHR", target: "ehr", kind: "schedule_task" };
+  if (/escalate|medical director|clinical reviewer|route to/.test(t)) return { label: "Assign reviewer in EHR", target: "ehr", kind: "assign_reviewer" };
+  if (/request|order|outstanding records|hold|pending/.test(t)) return { label: "Update case in EHR", target: "ehr", kind: "update_case" };
+  if (/revision pathway|move case/.test(t)) return { label: "Move case in EHR", target: "ehr", kind: "move_case" };
+  if (/close case|ineligibility/.test(t)) return { label: "Close case in EHR", target: "ehr", kind: "close_case" };
+  return { label: "Update EHR", target: "ehr", kind: "update_case" };
+}
+
+function findEvidenceForStep(stepText){
+  const m = String(stepText).match(/^\[([A-Z]{2,4}-\d{3})\]/);
+  if (!m) return "";
+  const sopId = m[1];
+  const findings = (LAST_RESULT && LAST_RESULT.findings) || [];
+  const f = findings.find(x => x.sop_id === sopId);
+  return (f && f.evidence) ? f.evidence : "";
+}
+
+function renderSteps(){
+  const list = $("stepsList"); if (!list) return;
+  const steps = (LAST_RESULT && LAST_RESULT.next_steps) || [];
+  list.innerHTML = steps.map((s, i) => {
+    const st = STEP_STATE[i] || { vote: null, done: false, notes_pushed: false };
+    const cta = inferStepCta(s);
+    const locked = st.done || st.notes_pushed;
+    const liClass = st.done ? "done" : (st.vote === "down" ? "flagged" : "");
+    const upActive = st.vote === "up" ? "active up" : "";
+    const downActive = st.vote === "down" ? "active down" : "";
+    const ctaDisabled = !(st.vote === "up") || locked;
+    const ctaLabel = st.done ? "Completed" : cta.label;
+    const ctaClass = st.done ? "step-cta done" : "step-cta";
+    const statusBadge = st.done
+      ? `<span class="step-status done">Completed</span>`
+      : (st.notes_pushed
+          ? `<span class="step-status flagged">Notes pushed</span>`
+          : (st.vote === "down" ? `<span class="step-status flagged">Follow-up flagged</span>` : ""));
+    const evidence = findEvidenceForStep(s);
+    const evidenceBlock = evidence
+      ? `<div class="step-evidence" style="grid-column:2;">
+           <span class="step-evidence-label">Patient quote:</span>
+           <span class="step-evidence-text">"${escapeHtml(evidence)}"</span>
+         </div>`
+      : "";
+    // Copy Message stays available even after the EHR CTA is fired - the
+    // Specialist may want to save the message for the Draft Email AFTER
+    // updating the EHR. Only disabled on the disagree path (notes_pushed).
+    const copyMsgBtn = isPatientCommStep(s)
+      ? `<button class="btn secondary small" title="Copy patient-facing message" onclick="onCopyStepMessage(${i})" ${st.notes_pushed ? "disabled" : ""}>Copy Message</button>`
+      : "";
+    return `
+      <li class="${liClass}">
+        <div class="num">${i+1}</div>
+        <div class="step-text">${formatStep(s)}</div>
+        ${evidenceBlock}
+        <div class="step-controls">
+          <button class="thumb-btn ${upActive}" title="Approve" onclick="onStepVote(${i},'up')" ${locked ? "disabled" : ""}>👍</button>
+          <button class="thumb-btn ${downActive}" title="Flag for follow-up" onclick="onStepVote(${i},'down')" ${locked ? "disabled" : ""}>👎</button>
+          <button class="${ctaClass}" onclick="onStepCta(${i})" ${ctaDisabled ? "disabled" : ""}>${escapeHtml(ctaLabel)}</button>
+          ${copyMsgBtn}
+          ${statusBadge}
+        </div>
+      </li>`;
+  }).join("");
+
+  renderDraftEmailControls();
+}
+
+function renderDraftEmailControls(){
+  const emailContainer = $("emailDraftContainer"); if (!emailContainer) return;
+  const count = COPIED_STEP_MESSAGES.length;
+  emailContainer.innerHTML = `
+    <h3 class="email-draft-heading">Draft patient email</h3>
+    <div class="muted" style="font-size:12px; margin-bottom:8px;">
+      Use the Copy Message button on each comm step you want to include (${count} copied so far). When you're ready, click Draft Email to assemble a patient-facing email.
+    </div>
+    <button class="btn small" onclick="onDraftEmail()" ${count === 0 ? "disabled" : ""}>Draft Email${count > 0 ? " (" + count + " step" + (count === 1 ? "" : "s") + ")" : ""}</button>
+    <div id="emailDraftResult" style="margin-top:12px;"></div>
+  `;
+}
+
+async function onDraftEmail(){
+  if (COPIED_STEP_MESSAGES.length === 0) { toast("Copy at least one step message first."); return; }
+  const resultDiv = $("emailDraftResult");
+  if (resultDiv) resultDiv.innerHTML = `<div class="muted" style="font-size:13px;">Drafting with Claude... <span class="spinner" style="display:inline-block; vertical-align:middle;"></span></div>`;
+  try {
+    const r = LAST_RESULT || {};
+    const resp = await api("/api/draft-email", {
+      method: "POST",
+      body: JSON.stringify({
+        patient_name: (r.crm_record && r.crm_record.name) || "Patient",
+        case_type: (r.crm_record && r.crm_record.case_type) || "",
+        disposition: (r.overall_disposition && r.overall_disposition.status) || "",
+        copied_messages: COPIED_STEP_MESSAGES.map(m => ({ sop_id: m.sopId, message: m.message })),
+        specialist_name: (CURRENT_USER && CURRENT_USER.name) || "Care Specialist"
+      })
+    });
+    if (!resp.ok) throw new Error(resp.error || "draft failed");
+    const subject = resp.subject || "Following up on your call";
+    const body = resp.body || "";
+    const full = `Subject: ${subject}\n\n${body}`;
+    if (resultDiv) {
+      resultDiv.innerHTML = `
+        <textarea id="emailDraftText" class="email-draft">${escapeHtml(full)}</textarea>
+        <div style="display:flex; gap:8px; margin-top:8px; align-items:center;">
+          <button class="btn small" onclick="onCopyEmail()">Copy Email</button>
+          <span class="muted" style="font-size:11px;">Edit before copying as needed.</span>
+        </div>`;
+    }
+  } catch (e) {
+    if (resultDiv) resultDiv.innerHTML = `<div class="muted" style="font-size:13px; color:var(--red);">Failed to draft email: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function onStepVote(i, vote){
+  if (!STEP_STATE[i] || STEP_STATE[i].done || STEP_STATE[i].notes_pushed) return;
+  if (vote === "down") {
+    // Open the step-down notes modal. Don't commit the vote until Push.
+    ACTIVE_STEP_DOWN_INDEX = i;
+    const stepText = (LAST_RESULT && LAST_RESULT.next_steps && LAST_RESULT.next_steps[i]) || "";
+    $("stepDownStepText").textContent = stepText;
+    $("stepDownNotes").value = "";
+    $("stepDownModal").classList.add("show");
+    return;
+  }
+  STEP_STATE[i].vote = STEP_STATE[i].vote === vote ? null : vote;
+  renderSteps();
+}
+
+function onStepDownCancel(){
+  $("stepDownModal").classList.remove("show");
+  ACTIVE_STEP_DOWN_INDEX = -1;
+}
+
+async function onStepDownPush(){
+  const i = ACTIVE_STEP_DOWN_INDEX;
+  if (i < 0 || !STEP_STATE[i]) return;
+  const notes = $("stepDownNotes").value.trim();
+  if (!notes) { toast("Please add notes before pushing to the patient profile."); return; }
+  const stepText = (LAST_RESULT && LAST_RESULT.next_steps && LAST_RESULT.next_steps[i]) || "";
+  try {
+    const r = await api("/api/integrations/export", {
+      method: "POST",
+      body: JSON.stringify({
+        target: "ehr",
+        kind: "step_disagree_notes",
+        step_index: i,
+        step_text: stepText,
+        notes,
+        payload: LAST_RESULT
+      })
+    });
+    if (r.ok) toast("Step notes pushed - ref " + r.reference);
+    else { toast("Push failed: " + (r.error || "unknown")); return; }
+  } catch (e) {
+    toast("Push failed: " + e.message); return;
+  }
+  // Commit the flagged state + remove from Draft Email collection.
+  STEP_STATE[i].vote = "down";
+  STEP_STATE[i].notes_pushed = true;
+  COPIED_STEP_MESSAGES = COPIED_STEP_MESSAGES.filter(c => c.stepIndex !== i);
+  $("stepDownModal").classList.remove("show");
+  ACTIVE_STEP_DOWN_INDEX = -1;
+  renderSteps();
+}
+
+async function onStepCta(i){
+  const st = STEP_STATE[i]; if (!st || st.vote !== "up" || st.done) return;
+  const stepText = (LAST_RESULT && LAST_RESULT.next_steps && LAST_RESULT.next_steps[i]) || "";
+  const cta = inferStepCta(stepText);
+  toast(cta.label + "...");
+  try {
+    const r = await api("/api/integrations/export", {
+      method: "POST",
+      body: JSON.stringify({ target: cta.target, kind: cta.kind, step_index: i, step_text: stepText, payload: LAST_RESULT })
+    });
+    if (r.ok) {
+      st.done = true;
+      toast(`Done - ${cta.target} ref ${r.reference}`);
+    } else { toast("Automation failed"); }
+  } catch (e) {
+    toast("Automation failed: " + e.message);
+  }
+  renderSteps();
+}
+
+//---- SOP library ----
+async function refreshSops(){
+  const r = await api("/api/sops");
+  SOPS = (r.rules || []).slice();
+  renderSopGrid();
+}
+function renderSopGrid(){
+  $("sopGrid").innerHTML = SOPS.map(s => `
+    <div class="sop-card">
+      <header>
+        <span class="id">${escapeHtml(s.id)}</span>
+        <span class="status ${statusClass(s.case_status)}">${escapeHtml(s.case_status)}</span>
+      </header>
+      <h3>${escapeHtml(s.finding || "")}</h3>
+      <div class="meta">${escapeHtml(s.category)} - applies to: ${escapeHtml((s.applies_to||[]).join(", "))}</div>
+      <p><strong>Action:</strong> ${escapeHtml(s.action || "")}</p>
+      <p class="muted" style="font-family:ui-monospace,monospace; font-size:11px;">${escapeHtml(s.trigger_logic || "")}</p>
+    </div>`).join("");
+}
+// SOP editor functions removed - SOP Library is read-only.
+// The /api/sops POST/PUT/DELETE endpoints still exist on the server
+// (they return 503 on Vercel anyway) but nothing in the UI calls them.
+
+//---- boot the app immediately (no sign-in gate) ----
+initApp();
+</script>
+</body>
+</html>
