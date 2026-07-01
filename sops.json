@@ -93,7 +93,7 @@
       "id": "BAR-003",
       "category": "Bariatric",
       "applies_to": ["bariatric"],
-      "finding": "No Registered Dietician (RD) identified",
+      "finding": "No Registered Dietitian (RD) identified",
       "case_status": "Hold",
       "action": "Provide in-network RD list; patient must confirm RD before referral.",
       "required_flags": [
