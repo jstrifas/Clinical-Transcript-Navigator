@@ -151,8 +151,8 @@
   .brand-icon { width: 16px; height: 16px; flex-shrink: 0; }
 
   /* transcript box — auto-grows to fit the whole conversation (no scroll) */
-  #transcript { min-height: 380px; white-space: pre-wrap; overflow: hidden; tab-size: 2; }
-  @media (max-width: 640px) { #transcript { min-height: 300px; } }
+  #transcript { min-height: 240px; white-space: pre-wrap; overflow: hidden; tab-size: 2; }
+  @media (max-width: 640px) { #transcript { min-height: 200px; } }
 
   /* sample-patient picker */
   .patient-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -692,8 +692,10 @@ function initApp(){
 function autoGrowTranscript(){
   const t = $("transcript"); if (!t) return;
   t.style.height = "auto";
-  const cap = Math.round(window.innerHeight * 0.75);
-  const target = Math.min(Math.max(t.scrollHeight + 2, 380), cap);
+  // Cap the box so a full sample transcript doesn't push the Analyze button and
+  // the running/results state below the fold: it scrolls internally past ~380px.
+  const cap = Math.min(Math.round(window.innerHeight * 0.5), 380);
+  const target = Math.min(Math.max(t.scrollHeight + 2, 240), cap);
   t.style.height = target + "px";
   t.style.overflowY = (t.scrollHeight + 2 > cap) ? "auto" : "hidden";
 }
