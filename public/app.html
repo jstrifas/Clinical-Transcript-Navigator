@@ -956,6 +956,19 @@ async function onImportSample(source){
   if (r.ok) { $("transcript").value = r.transcript; toast("Imported transcript from "+source); }
 }
 //---- analyze ----
+// Smoothly bring the results / running state into view so the Specialist
+// doesn't have to scroll down after clicking Analyze. Offsets for the sticky
+// topbar and respects the user's reduced-motion preference.
+function scrollToResults(){
+  const el = document.getElementById("resultsContainer");
+  if (!el) return;
+  const topbar = document.querySelector(".topbar");
+  const offset = (topbar ? topbar.offsetHeight : 0) + 12;
+  const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top: y, behavior: reduce ? "auto" : "smooth" });
+}
+
 async function onAnalyze(){
   const transcript = $("transcript").value.trim();
   if (!transcript) { toast("Paste or import a transcript first."); return; }
@@ -1027,6 +1040,7 @@ async function onAnalyze(){
 
   $("analyzeBtn").textContent = "Analyzing...";
   $("resultsContainer").innerHTML = `<div class="card"><div class="muted">Running analysis... <span class="spinner" style="display:inline-block; vertical-align:middle;"></span></div></div>`;
+  scrollToResults();  // bring the running state + results into view, no manual scroll
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 90000); // 90s safety net
   try {
