@@ -17,19 +17,12 @@ scoring — in under 30 seconds.
   with source quotes and field-level confidence
 - **Stage 2:** Deterministic Python SOP rule engine 
   evaluates all 8 rules — same output every run
-- **Stage 3:** Google Gemini independently scores 
-  recommendation quality across 4 dimensions
+- **Stage 3:** Google Gemini independently scores recommendation quality across 4 dimensions 
+   SOP accuracy 40%, extraction completeness 30%, 
+   next step actionability 20%, human review 10%
 - **Stage 4:** Specialist reviews, agrees or disagrees, 
   pushes structured output to EHR
 
-## Setup
-\`\`\`bash
-git clone https://github.com/jstrifa-bit/Clinical-Transcript-Navigator
-cd Clinical-Transcript-Navigator
-pip install -r requirements.txt
-cp .env.example .env  # add your API keys
-streamlit run app.py
-\`\`\`
 
 ## Edge Cases Handled
 - Incomplete transcripts → Pending disposition, no false routing
