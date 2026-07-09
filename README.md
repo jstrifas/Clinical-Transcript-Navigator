@@ -3,7 +3,7 @@
 AI-powered clinical transcript extraction and SOP routing 
 assistant for healthcare Care Teams.
 
-**Live demo:** https://clinical-transcript-navigator.vercel.app/
+**Live demo:** https://clinical-transcript-navigator-git-main-jstrifa-bits-projects.vercel.app/
 **Built with:** Claude Opus · Google Gemini · Python
 
 ## What It Does
